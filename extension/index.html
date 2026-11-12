@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>P5.js sketches</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header>
+    <div class="header-title">
+      <div class="title-row">
+        <h1>P5.js sketches</h1>
+        <button id="runtime-settings" class="icon-button" aria-label="Runtime settings" aria-expanded="false" aria-controls="runtime-settings-panel">
+          <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="4.25"/><circle cx="8" cy="8" r="1.5"/><path d="M8 1.5v2.25M8 12.25v2.25M1.5 8h2.25M12.25 8h2.25M3.4 3.4 5 5M11 11l1.6 1.6M3.4 12.6 5 11M11 5l1.6-1.6"/></svg>
+        </button>
+      </div>
+      <button id="change-folder" class="folder-link" aria-expanded="false" aria-controls="setup" aria-describedby="change-folder-hint" data-tooltip="Change sketches folder">
+        <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.75 3.5h4l1.5 1.5h7v8h-12.5z"/></svg>
+        <span id="repository">Looking for sketches...</span>
+      </button>
+      <span id="change-folder-hint" hidden>Change sketches folder</span>
+    </div>
+    <div class="header-controls">
+      <label>Sketch <select id="sketches" aria-label="Available sketches"></select></label>
+      <div class="toolbar">
+        <button id="new-sketch" class="icon-button" aria-label="New sketch" aria-expanded="false" aria-controls="new-sketch-form" disabled>
+          <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11"/></svg>
+        </button>
+        <button id="new-variation" class="icon-button" aria-label="New variation" disabled>
+          <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><rect x="5.25" y="5.25" width="9" height="9" rx="1.5"/><path d="M10.75 5.25v-2a1.5 1.5 0 0 0-1.5-1.5h-6a1.5 1.5 0 0 0-1.5 1.5v6a1.5 1.5 0 0 0 1.5 1.5h2"/></svg>
+        </button>
+        <button id="restart" class="icon-button" aria-label="Restart sketch">
+          <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.25 8a5.25 5.25 0 1 1-1.54-3.71M12.25 1.75v3h-3"/></svg>
+        </button>
+        <button id="toggle" class="icon-button panel-toggle" aria-label="Hide editor" aria-controls="editor-pane" aria-expanded="true" aria-pressed="true">
+          <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5"/><path d="M9.5 2.75v10.5"/></svg>
+        </button>
+        <button id="toggle-controls" class="icon-button panel-toggle" aria-label="Show controls" aria-controls="controls-pane" aria-expanded="false" aria-pressed="false">
+          <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 12h12"/><circle cx="6" cy="4" r="2"/><circle cx="10" cy="12" r="2"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  <section id="runtime-settings-panel" aria-label="p5.js runtime settings" hidden>
+    <strong>p5.js runtime</strong>
+    <p id="runtime-help"></p>
+    <p id="runtime-status" role="status">Checking cached runtime...</p>
+    <form id="registry-form">
+      <label for="registry-url">npm registry or registry proxy</label>
+      <div class="row">
+        <input id="registry-url" type="url" placeholder="https://registry.npmjs.org/" autocomplete="off" spellcheck="false">
+        <button type="submit">Save and retry</button>
+        <button id="runtime-retry" type="button">Retry download</button>
+      </div>
+      <small>Leave blank to use existing npm configuration (public npm if unset). Authentication stays in npm configuration. This setting affects only this extension.</small>
+    </form>
+    <p id="runtime-settings-error" role="alert"></p>
+  </section>
+  <form id="new-sketch-form" hidden>
+    <label for="sketch-name">Sketch name</label>
+    <div class="row">
+      <input id="sketch-name" type="text" spellcheck="false" autocomplete="off" placeholder="my-sketch.js" maxlength="128" aria-describedby="sketch-name-help" required>
+      <button type="submit" class="primary">Create sketch</button>
+      <button id="cancel-new-sketch" type="button">Cancel</button>
+    </div>
+    <small id="sketch-name-help">Use letters, numbers, spaces, hyphens or underscores. The .js extension is added automatically.</small>
+    <p id="create-error" role="alert"></p>
+  </form>
+  <section id="setup" aria-labelledby="setup-title" hidden>
+    <div class="setup-heading">
+      <h2 id="setup-title">Choose your sketches folder</h2>
+      <button id="close-setup" class="icon-button" aria-label="Close folder chooser" hidden>
+        <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>
+      </button>
+    </div>
+    <p id="setup-message"></p>
+    <button id="create-folder" class="primary" hidden>Create sketches folder</button>
+    <form id="choose-form">
+      <label for="folder-path">Open an existing folder</label>
+      <div class="row">
+        <input id="folder-path" type="text" spellcheck="false" autocomplete="off" placeholder="/absolute/path/to/sketches" required>
+        <button type="submit">Open folder</button>
+      </div>
+      <small>Use a folder of .js sketches, or a folder that contains a <code>sketches</code> folder.</small>
+    </form>
+    <p id="setup-error" role="alert"></p>
+  </section>
+  <div id="notice" role="status" aria-live="polite"></div>
+  <div id="conflict" hidden>
+    The file changed on disk. Your draft is preserved.
+    <button id="load-disk">Use disk version</button>
+    <button id="keep-draft">Save my draft instead</button>
+  </div>
+  <main>
+    <section id="preview-pane" aria-label="Live preview">
+      <div class="pane-heading"><strong>Preview</strong><span>LIVE</span></div>
+      <iframe id="preview" title="Sandboxed p5.js sketch" sandbox="allow-scripts"></iframe>
+      <pre id="runtime-error" role="alert" hidden></pre>
+    </section>
+    <section id="editor-pane" aria-label="Script editor">
+      <div class="pane-heading"><strong>JavaScript</strong><span id="save-status">Saved</span></div>
+      <div id="editor"></div>
+    </section>
+    <section id="controls-pane" aria-label="Sketch controls" hidden>
+      <div class="pane-heading controls-heading">
+        <strong>Sketch controls</strong>
+        <div class="controls-heading-actions">
+          <span>SOURCE</span>
+          <button id="controls-help-button" class="icon-button" aria-label="About sketch controls" popovertarget="controls-help">
+            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M6.5 6a1.5 1.5 0 1 1 2.4 1.2C8.3 7.6 8 8 8 9M8 11h.01"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="controls-help" popover aria-labelledby="controls-help-title">
+        <strong id="controls-help-title">Sketch control rules</strong>
+        <p>Use top-level <code>const</code> number, boolean or quoted-string literals. Expressions and nested declarations stay in code.</p>
+        <p>A comment directly above (no blank line) or on the same line supplies the label; otherwise the identifier becomes a readable label.</p>
+        <pre><code>// Speed @range 0 5 0.1
+const SPEED = 1;</code></pre>
+        <p><code>@range &lt;min&gt; &lt;max&gt; &lt;step&gt;</code> adds a slider: use finite bounds, min &lt; max and step &gt; 0. Without it, numbers get number fields.</p>
+        <p>Booleans get switches; strings get text boxes, except <code>#rgb</code>/<code>#rrggbb</code> colors get color pickers. Edits update the source, preview and saved sketch.</p>
+      </div>
+      <p id="parameters-help" role="status"></p>
+      <div id="parameters"></div>
+    </section>
+  </main>
+</body>
+</html>

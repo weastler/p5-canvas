@@ -1,0 +1,31 @@
+{
+  "name": "copilot-p5-canvas",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "A local P5.js canvas extension for GitHub Copilot with live preview, source-backed controls and an autosaving JavaScript editor.",
+  "keywords": ["copilot", "canvas-extension", "p5", "creative-coding"],
+  "engines": { "node": ">=22" },
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:editor": "node scripts/build-editor.mjs",
+    "pretest": "npm run build:editor",
+    "test": "node --test",
+    "preprepare:extension": "npm run build:editor",
+    "prepare:extension": "node scripts/prepare-extension.mjs",
+    "preinstall:extension": "npm run build:editor",
+    "install:extension": "node scripts/install.mjs"
+  },
+  "dependencies": {
+    "@codemirror/commands": "6.11.1",
+    "@codemirror/lang-javascript": "6.2.5",
+    "@codemirror/language": "6.13.1",
+    "@codemirror/state": "6.7.6",
+    "@codemirror/view": "6.43.15",
+    "@lezer/highlight": "1.2.5",
+    "p5": "1.11.11"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

@@ -1,0 +1,6 @@
+node_modules/
+extension/vendor/
+dist/
+/.github/extensions/p5-canvas/
+/.npmrc
+.DS_Store
