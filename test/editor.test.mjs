@@ -59,7 +59,9 @@ test("CodeMirror preserves caret alignment, saves, preview, conflicts, and draft
     const profile = path.join(root, "browser-profile");
     browser = spawn(browserPath, [
       "--headless=new", "--remote-debugging-port=0", `--user-data-dir=${profile}`,
-      "--disable-background-networking", "--disable-extensions", "--no-first-run", "--window-size=1100,720", "about:blank",
+      "--disable-background-networking", "--disable-extensions", "--no-first-run", "--no-default-browser-check",
+      "--disable-component-update", "--disable-sync", "--disable-dev-shm-usage", "--password-store=basic", "--use-mock-keychain",
+      "--window-size=1100,720", "about:blank",
     ], { stdio: ["ignore", "ignore", "pipe"] });
     let browserOutput = "";
     let browserExit;
