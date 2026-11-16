@@ -984,6 +984,6 @@ function draw() {}
       clearTimeout(timeout);
       if (browser.exitCode === null && browser.signalCode === null) { browser.kill("SIGKILL"); await stopped; }
     }
-    await rm(root, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
   }
 });
