@@ -69,6 +69,24 @@ JavaScript's full semantic validity; runtime errors still appear in the preview.
 Controls have no grouping, persistent panel preferences or gesture-level
 slider undo grouping (each accepted slider input is an undoable transaction).
 
+## Install a built release
+
+Continuous integration builds the ready-to-install payload and publishes it to
+the [`dist` branch](https://github.com/weastler/p5-canvas/tree/dist), so `main`
+stays source-only. Install from the latest build:
+
+```text
+https://github.com/weastler/p5-canvas/tree/dist/p5-canvas
+```
+
+Each `v*` release also pins its build at `dist-<tag>`, for example
+`https://github.com/weastler/p5-canvas/tree/dist-v1.0.0/p5-canvas`, and attaches
+the same payload as a zip to its
+[GitHub Release](https://github.com/weastler/p5-canvas/releases). To update,
+install again from the `dist` branch or a newer pinned tag, then reload
+extensions. CI installs dependencies only through the configured npm proxy
+registry and fails rather than falling back to public npm.
+
 ## Install locally
 
 Requires Node.js 22+ and GitHub Copilot with extension canvas support.
@@ -307,15 +325,16 @@ The host gist-sharing format has per-file and total size limits. The prepared
 payload omits p5.js and the installer tests check that every file fits the
 1 MiB per-file limit. Gist publication has not been attempted or verified.
 Repository-URL installation must point to a
-complete runtime payload with the generated editor assets; the source
-`extension/` folder alone is not a ready-to-install distribution.
+complete runtime payload with the generated editor assets, such as the `dist`
+branch's `p5-canvas/` folder; the source `extension/` folder alone is not a
+ready-to-install distribution.
 
 This project's code is licensed under MIT; see `LICENSE`. Bundled third-party
 notices are `vendor/editor-licenses.txt` (the CodeMirror/Lezer editor dependencies,
 MIT). The downloaded p5.js package retains its `package/license.txt` (LGPL-2.1)
 in the verified cache. These notices do not establish release or licensing
 compliance; source/redistribution obligations and publication approval still
-require review before distribution. No remote repository or public release is configured.
+require review before distribution.
 
 ## Development
 

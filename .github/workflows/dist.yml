@@ -1,0 +1,117 @@
+name: Build and publish dist
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dist-publish
+  cancel-in-progress: false
+
+env:
+  NPM_REGISTRY: https://packagefeedproxy.microsoft.io/npm/
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - name: Configure npm proxy registry
+        run: |
+          printf 'registry=%s\n' "$NPM_REGISTRY" > "$RUNNER_TEMP/.npmrc"
+          echo "NPM_CONFIG_USERCONFIG=$RUNNER_TEMP/.npmrc" >> "$GITHUB_ENV"
+
+      - name: Verify registry policy
+        run: |
+          test "$(npm config get registry)" = "$NPM_REGISTRY"
+          if npm config list --json | grep -E '"@[^"]+:registry"'; then
+            echo "::error::Scoped registry overrides are not allowed in CI." >&2
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Verify public npm was not used
+        run: |
+          test -f node_modules/.package-lock.json
+          if grep -q 'registry\.npmjs\.org' node_modules/.package-lock.json; then
+            echo "::error::A package resolved from public npm." >&2
+            exit 1
+          fi
+
+      - name: Test
+        run: npm test
+
+      - name: Prepare extension payload
+        run: npm run prepare:extension
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: p5-canvas
+          path: dist/p5-canvas/
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: p5-canvas
+          path: payload/p5-canvas
+
+      - name: Commit payload to the dist branch
+        id: dist
+        env:
+          REPO_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
+        run: |
+          git init -q dist-branch
+          cd dist-branch
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add origin "$REPO_URL"
+          if git ls-remote --exit-code --heads origin dist >/dev/null; then
+            git fetch -q --depth=1 origin dist
+            git checkout -q -b dist FETCH_HEAD
+          else
+            git checkout -q --orphan dist
+          fi
+          rm -rf p5-canvas
+          cp -R ../payload/p5-canvas p5-canvas
+          git add -A p5-canvas
+          if git diff --cached --quiet; then
+            echo "Payload unchanged."
+          else
+            git commit -q -m "Build p5-canvas from ${GITHUB_SHA::7}" -m "Source: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+            git push -q origin HEAD:refs/heads/dist
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Pin dist ref and create release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DIST_SHA: ${{ steps.dist.outputs.sha }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+          gh api "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/dist-$tag" -f sha="$DIST_SHA"
+          (cd payload && zip -qr "../p5-canvas-$tag.zip" p5-canvas)
+          gh release create "$tag" "p5-canvas-$tag.zip" \
+            --repo "$GITHUB_REPOSITORY" --verify-tag --title "$tag" --generate-notes \
+            --notes "Install from ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/dist-$tag/p5-canvas"
