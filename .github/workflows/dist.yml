@@ -52,8 +52,14 @@ jobs:
             exit 1
           fi
 
+      # Ubuntu's AppArmor policy blocks Chrome's sandbox; allow it rather than disabling the sandbox.
+      - name: Allow the browser sandbox
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Test
         run: npm test
+        env:
+          P5_TEST_BROWSER: /usr/bin/google-chrome
 
       - name: Prepare extension payload
         run: npm run prepare:extension
