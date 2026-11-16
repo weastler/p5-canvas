@@ -60,12 +60,22 @@ test("CodeMirror preserves caret alignment, saves, preview, conflicts, and draft
     browser = spawn(browserPath, [
       "--headless=new", "--remote-debugging-port=0", `--user-data-dir=${profile}`,
       "--disable-background-networking", "--disable-extensions", "--no-first-run", "--window-size=1100,720", "about:blank",
-    ], { stdio: "ignore" });
+    ], { stdio: ["ignore", "ignore", "pipe"] });
+    let browserOutput = "";
+    let browserExit;
+    browser.stderr.on("data", chunk => { browserOutput = (browserOutput + chunk).slice(-4000); });
+    browser.on("exit", (code, signal) => { browserExit = signal ?? code; });
     let port;
-    await waitFor(async () => {
-      try { port = (await readFile(path.join(profile, "DevToolsActivePort"), "utf8")).split("\n")[0]; return true; }
-      catch (error) { if (error.code === "ENOENT") return false; throw error; }
-    }, "browser DevTools");
+    try {
+      await waitFor(async () => {
+        if (browserExit !== undefined) throw new Error(`Browser exited (${browserExit})`);
+        try { port = (await readFile(path.join(profile, "DevToolsActivePort"), "utf8")).split("\n")[0]; return true; }
+        catch (error) { if (error.code === "ENOENT") return false; throw error; }
+      }, "browser DevTools", 30000);
+    } catch (error) {
+      error.message += `\n${browserOutput}`;
+      throw error;
+    }
     const targets = await (await fetch(`http://127.0.0.1:${port}/json`)).json();
     socket = new WebSocket(targets.find(target => target.type === "page").webSocketDebuggerUrl);
     await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
