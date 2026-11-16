@@ -486,7 +486,7 @@ function draw() {}
         };
       })()`);
       assert.ok(Math.abs(layout.buttonRight - layout.rightEdge) <= 1, `toolbar reaches right padding at ${width}px: ${JSON.stringify(layout)}`);
-      assert.ok(Math.abs(layout.selectRight + 12 - layout.toolbarLeft) <= 1, `selector stays beside toolbar at ${width}px`);
+      assert.ok(Math.abs(layout.selectRight + 12 - layout.toolbarLeft) <= 1, `selector stays beside toolbar at ${width}px: ${JSON.stringify(layout)}`);
       assert.equal(layout.selectHeight, 32, `selector matches toolbar button height at ${width}px`);
       assert.ok(layout.selectPadding >= 6, `selector has vertical padding at ${width}px`);
       assert.ok(Math.abs(layout.selectCenter - layout.buttonCenter) <= 1, `selector stays centered at ${width}px`);

@@ -126,7 +126,9 @@ button:disabled { cursor: not-allowed; opacity: 0.6; }
   main.controls-open #editor-pane { grid-column: 1 / -1; grid-row: 2; min-height: 360px; }
 }
 @media (max-width: 650px) {
-  .header-controls select { max-width: calc(100vw - 290px); }
+  .header-controls { flex-wrap: nowrap; min-width: 0; }
+  .header-controls label { min-width: 0; }
+  .header-controls select { min-width: 0; }
   main, main.controls-open, main.controls-open.editor-hidden { grid-template-columns: minmax(0, 1fr); height: auto; }
   main.controls-open #controls-pane { grid-row: 2; }
   main.controls-open #editor-pane { grid-row: 3; }
