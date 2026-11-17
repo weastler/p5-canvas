@@ -71,9 +71,32 @@ slider undo grouping (each accepted slider input is an undoable transaction).
 
 ## Install a built release
 
-Continuous integration builds the ready-to-install payload and publishes it to
-the [`dist` branch](https://github.com/weastler/p5-canvas/tree/dist), so `main`
-stays source-only. Install from the latest build:
+Continuous integration publishes ready-to-install builds to the
+[`dist` branch](https://github.com/weastler/p5-canvas/tree/dist), so `main`
+stays source-only.
+
+### Install as a plugin
+
+In the Copilot app, open **Customize**, use the marketplace settings control
+to add `weastler/p5-canvas`, then find and install **p5-canvas**. The repository
+marketplace points to the built plugin on `dist`, not the source checkout. In
+Copilot CLI, the equivalent commands are:
+
+```sh
+copilot plugin marketplace add weastler/p5-canvas
+copilot plugin install p5-canvas@p5-canvas
+```
+
+Update it through the plugin manager or run
+`copilot plugin update p5-canvas@p5-canvas`. A new session loads the update.
+The plugin contributes a Copilot-specific canvas and requires a host that
+supports canvas extensions; it is not a portable canvas for every plugin client.
+Avoid enabling a separate installation of this same canvas at the same time,
+because both can offer `p5-sketches`.
+
+### Install the extension directly
+
+To install without the plugin manager, ask Copilot to install the extension from:
 
 ```text
 https://github.com/weastler/p5-canvas/tree/dist/p5-canvas
@@ -81,11 +104,12 @@ https://github.com/weastler/p5-canvas/tree/dist/p5-canvas
 
 Each `v*` release also pins its build at `dist-<tag>`, for example
 `https://github.com/weastler/p5-canvas/tree/dist-v1.0.0/p5-canvas`, and attaches
-the same payload as a zip to its
-[GitHub Release](https://github.com/weastler/p5-canvas/releases). To update,
-install again from the `dist` branch or a newer pinned tag, then reload
-extensions. CI installs dependencies only through the configured npm proxy
-registry and fails rather than falling back to public npm.
+separate extension and plugin zips to its
+[GitHub Release](https://github.com/weastler/p5-canvas/releases). To update a
+direct installation, install again from `dist` or a newer pinned tag, then reload
+extensions. The marketplace follows `dist`; the release's plugin zip is a fixed
+snapshot. CI uses the configured npm proxy and fails rather than falling back to
+public npm.
 
 ## Install locally
 
@@ -328,6 +352,13 @@ Repository-URL installation must point to a
 complete runtime payload with the generated editor assets, such as the `dist`
 branch's `p5-canvas/` folder; the source `extension/` folder alone is not a
 ready-to-install distribution.
+
+`npm run prepare:plugin` builds the complete Agent Plugins 1.0 package in
+`dist/plugin/`, including the same runtime payload, preview and licenses. It
+does not install or upload anything, and refuses to overwrite unexpected files.
+The published `dist` branch contains the plugin at its root and the direct
+extension in `p5-canvas/`. Runtime settings and downloaded packages remain
+outside both installations.
 
 This project's code is licensed under MIT; see `LICENSE`. Bundled third-party
 notices are `vendor/editor-licenses.txt` (the CodeMirror/Lezer editor dependencies,

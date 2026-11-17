@@ -61,13 +61,21 @@ jobs:
         env:
           P5_TEST_BROWSER: /usr/bin/google-chrome
 
-      - name: Prepare extension payload
-        run: npm run prepare:extension
+      - name: Prepare extension and plugin payloads
+        run: |
+          npm run prepare:extension
+          npm run prepare:plugin
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: p5-canvas
           path: dist/p5-canvas/
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: p5-canvas-plugin
+          path: dist/plugin/
           if-no-files-found: error
 
   publish:
@@ -82,7 +90,12 @@ jobs:
           name: p5-canvas
           path: payload/p5-canvas
 
-      - name: Commit payload to the dist branch
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: p5-canvas-plugin
+          path: payload/plugin
+
+      - name: Commit payloads to the dist branch
         id: dist
         env:
           REPO_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
@@ -98,9 +111,13 @@ jobs:
           else
             git checkout -q --orphan dist
           fi
-          rm -rf p5-canvas
+          rm -rf p5-canvas com.github.copilot/extensions/p5-canvas
+          mkdir -p assets com.github.copilot/extensions
           cp -R ../payload/p5-canvas p5-canvas
-          git add -A p5-canvas
+          cp -R ../payload/plugin/com.github.copilot/extensions/p5-canvas com.github.copilot/extensions/p5-canvas
+          cp ../payload/plugin/plugin.json ../payload/plugin/LICENSE .
+          cp ../payload/plugin/assets/preview.png assets/preview.png
+          git add -A -- p5-canvas com.github.copilot/extensions/p5-canvas plugin.json LICENSE assets/preview.png
           if git diff --cached --quiet; then
             echo "Payload unchanged."
           else
@@ -118,6 +135,8 @@ jobs:
           tag="$GITHUB_REF_NAME"
           gh api "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/dist-$tag" -f sha="$DIST_SHA"
           (cd payload && zip -qr "../p5-canvas-$tag.zip" p5-canvas)
-          gh release create "$tag" "p5-canvas-$tag.zip" \
+          (cd payload/plugin && zip -qr "../../p5-canvas-plugin-$tag.zip" plugin.json LICENSE assets com.github.copilot)
+          gh release create "$tag" "p5-canvas-$tag.zip" "p5-canvas-plugin-$tag.zip" \
             --repo "$GITHUB_REPOSITORY" --verify-tag --title "$tag" --generate-notes \
-            --notes "Install from ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/dist-$tag/p5-canvas"
+            --notes "Direct extension: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/dist-$tag/p5-canvas
+          Plugin package: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/dist-$tag"

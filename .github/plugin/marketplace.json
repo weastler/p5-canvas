@@ -1,0 +1,19 @@
+{
+  "name": "p5-canvas",
+  "owner": {
+    "name": "William Eastler"
+  },
+  "metadata": {
+    "description": "P5.js canvas for GitHub Copilot"
+  },
+  "plugins": [
+    {
+      "name": "p5-canvas",
+      "source": {
+        "source": "github",
+        "repo": "weastler/p5-canvas",
+        "ref": "dist"
+      }
+    }
+  ]
+}

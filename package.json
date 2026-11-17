@@ -13,6 +13,8 @@
     "test": "node --test",
     "preprepare:extension": "npm run build:editor",
     "prepare:extension": "node scripts/prepare-extension.mjs",
+    "preprepare:plugin": "npm run build:editor",
+    "prepare:plugin": "node scripts/prepare-plugin.mjs",
     "preinstall:extension": "npm run build:editor",
     "install:extension": "node scripts/install.mjs"
   },
