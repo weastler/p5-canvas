@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "p5-canvas",
   "description": "A P5.js canvas with live preview, sketch controls, and an autosaving JavaScript editor.",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "author": {
     "name": "William Eastler",
     "url": "https://github.com/weastler"

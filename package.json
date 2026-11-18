@@ -1,6 +1,6 @@
 {
   "name": "copilot-p5-canvas",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "license": "MIT",
   "description": "A local P5.js canvas extension for GitHub Copilot with live preview, source-backed controls and an autosaving JavaScript editor.",
   "keywords": ["copilot", "canvas-extension", "p5", "creative-coding"],
