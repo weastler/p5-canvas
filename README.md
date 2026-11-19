@@ -34,6 +34,12 @@ Or, in the app, open **Customize → Install canvas extension** and paste a fold
 
 The URL must point to the `p5-canvas` folder, not the repository root.
 
+### Manual ZIP
+
+Download [`p5-canvas-v1.0.0.zip`](https://github.com/weastler/p5-canvas/releases/download/v1.0.0/p5-canvas-v1.0.0.zip)
+and extract its `p5-canvas/` folder into `~/.copilot/extensions/`, so the result is
+`~/.copilot/extensions/p5-canvas/`. Then reload extensions or restart the app.
+
 ### Plugin
 
 In Copilot CLI, run:
