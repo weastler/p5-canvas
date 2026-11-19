@@ -26,6 +26,14 @@ Install the P5.js Canvas extension from
 https://github.com/weastler/p5-canvas/tree/dist-v1.0.0/p5-canvas
 ```
 
+Or, in the app, open **Customize → Install canvas extension** and paste a folder URL:
+
+- Latest: `https://github.com/weastler/p5-canvas/tree/dist/p5-canvas`
+- Pinned: `https://github.com/weastler/p5-canvas/tree/dist-v1.0.0/p5-canvas`. For another
+  version, replace `dist-v1.0.0` with its `dist-v*` tag or a commit ID from the `dist` branch.
+
+The URL must point to the `p5-canvas` folder, not the repository root.
+
 ### Plugin
 
 In Copilot CLI, run:
