@@ -36,6 +36,10 @@ The URL must point to the `p5-canvas` folder, not the repository root.
 
 ### Manual ZIP
 
+**Before replacing an existing installation:** Back up `~/.copilot/extensions/p5-canvas/`
+somewhere safe. Preserve its `artifacts/` folder, if present, and restore it into the new
+`p5-canvas/` folder before reloading; it may contain saved data.
+
 Download [`p5-canvas-v1.0.0.zip`](https://github.com/weastler/p5-canvas/releases/download/v1.0.0/p5-canvas-v1.0.0.zip)
 and extract its `p5-canvas/` folder into `~/.copilot/extensions/`, so the result is
 `~/.copilot/extensions/p5-canvas/`. Then reload extensions or restart the app.
