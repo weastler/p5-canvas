@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { createRuntime, P5_INTEGRITY, readRuntimeArchive, registryUrl, runtimeStorage } from "../extension/runtime.mjs";
+import { createNpmRunner, createRuntime, P5_INTEGRITY, readRuntimeArchive, registryUrl, resolveNpm, runtimeStorage } from "../extension/runtime.mjs";
 import { startServer } from "../extension/server.mjs";
 
 async function fixture(t) {
@@ -173,4 +173,62 @@ test("invalid legacy registry settings fail closed and can be repaired without c
   assert.equal((await runtime.acquire()).status, "ready");
   assert.equal(options.calls[0].args[1], "https://proxy.example/npm/p5/-/p5-1.11.11.tgz");
   assert.equal(await readFile(settings, "utf8"), "{", "the legacy setting is preserved");
+});
+
+async function npmLayout(t) {
+  const root = await mkdtemp(path.join(os.tmpdir(), "p5-npm-test-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const make = async (dir, { shim = false, node = false, cli = false } = {}) => {
+    const full = path.join(root, dir);
+    await mkdir(path.join(full, "node_modules", "npm", "bin"), { recursive: true });
+    if (shim) await writeFile(path.join(full, "npm.cmd"), "");
+    if (node) await writeFile(path.join(full, "node.exe"), "");
+    if (cli) await writeFile(path.join(full, "node_modules", "npm", "bin", "npm-cli.js"), "console.log(JSON.stringify(process.argv.slice(2)));\n");
+    return full;
+  };
+  return { root, make };
+}
+
+test("npm launches directly outside Windows", async () => {
+  assert.deepEqual(await resolveNpm({ platform: "linux", env: {} }), { file: "npm", args: [] });
+  assert.deepEqual(await resolveNpm({ platform: "darwin", env: {} }), { file: "npm", args: [] });
+});
+
+test("Windows npm runs npm-cli.js with node.exe instead of the npm.cmd shim", async t => {
+  const { root, make } = await npmLayout(t);
+  const nodejs = await make("nodejs", { shim: true, node: true, cli: true });
+  const resolved = await resolveNpm({ platform: "win32", env: { Path: `${path.join(root, "missing")};"${nodejs}"` },
+    execPath: path.join(root, "copilot.exe") });
+  assert.deepEqual(resolved, { file: path.join(nodejs, "node.exe"), args: [path.join(nodejs, "node_modules", "npm", "bin", "npm-cli.js")] });
+});
+
+test("Windows npm honors a global npm prefix shim and falls back to node.exe on PATH", async t => {
+  const { make } = await npmLayout(t);
+  const prefix = await make("prefix", { shim: true, cli: true });
+  const nodejs = await make("nodejs", { shim: true, node: true, cli: true });
+  const resolved = await resolveNpm({ platform: "win32", env: { PATH: `${prefix};${nodejs}` }, execPath: "C:\\copilot.exe" });
+  assert.deepEqual(resolved, { file: path.join(nodejs, "node.exe"), args: [path.join(prefix, "node_modules", "npm", "bin", "npm-cli.js")] });
+});
+
+test("Windows npm uses the host node.exe's bundled npm when npm.cmd is not on PATH", async t => {
+  const { make } = await npmLayout(t);
+  const nodejs = await make("nodejs", { node: true, cli: true });
+  const resolved = await resolveNpm({ platform: "win32", env: { PATH: "" }, execPath: path.join(nodejs, "node.exe") });
+  assert.deepEqual(resolved, { file: path.join(nodejs, "node.exe"), args: [path.join(nodejs, "node_modules", "npm", "bin", "npm-cli.js")] });
+});
+
+test("Windows npm fails clearly when npm or node cannot be found", async t => {
+  const { make } = await npmLayout(t);
+  const shimOnly = await make("shim", { shim: true, cli: true });
+  await assert.rejects(resolveNpm({ platform: "win32", env: { PATH: shimOnly }, execPath: "C:\\copilot.exe" }), /Could not find npm/);
+  await assert.rejects(resolveNpm({ platform: "win32", env: {}, execPath: "C:\\copilot.exe" }), /Could not find npm/);
+});
+
+test("Windows npm runner passes arguments verbatim without a shell", { skip: process.platform !== "win32" }, async t => {
+  const { make } = await npmLayout(t);
+  const prefix = await make("prefix", { shim: true, cli: true });
+  const run = createNpmRunner({ env: { PATH: prefix }, execPath: process.execPath });
+  const args = ["pack", "https://example.test/p5/-/p5.tgz?a=1&b=2", "--x=\"quoted\" & echo injected", "%PATH%", "a|b^c<d>e"];
+  const { stdout } = await run(args, { windowsHide: true });
+  assert.deepEqual(JSON.parse(stdout), args);
 });

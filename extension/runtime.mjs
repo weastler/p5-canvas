@@ -55,10 +55,50 @@ async function exists(file) {
   catch (failure) { if (failure.code === "ENOENT") return false; throw failure; }
 }
 
+async function isFile(file) {
+  try { return (await stat(file)).isFile(); } catch { return false; }
+}
+
+// Windows npm is a .cmd shim that execFile cannot launch without a shell (CVE-2024-27980),
+// and the extension host is not necessarily node.exe. Mirror npm.cmd instead: run its
+// npm-cli.js with node.exe directly so arguments are never interpreted by cmd.exe.
+export async function resolveNpm({ platform = process.platform, env = process.env, execPath = process.execPath } = {}) {
+  if (platform !== "win32") return { file: "npm", args: [] };
+  const variable = name => Object.entries(env).find(([key]) => key.toUpperCase() === name)?.[1];
+  const dirs = (variable("PATH") ?? "").split(";").map(dir => dir.trim().replace(/^"(.*)"$/, "$1")).filter(Boolean);
+  const onPath = async name => {
+    for (const dir of dirs) if (path.isAbsolute(dir) && await isFile(path.join(dir, name))) return path.join(dir, name);
+    return null;
+  };
+  const hostNode = path.basename(execPath).toLowerCase() === "node.exe" ? execPath : null;
+  const pathNode = await onPath("node.exe");
+  const candidates = [];
+  const npmShim = await onPath("npm.cmd");
+  if (npmShim) candidates.push(path.dirname(npmShim));
+  for (const node of [hostNode, pathNode]) if (node) candidates.push(path.dirname(node));
+  for (const dir of candidates) {
+    const cli = path.join(dir, "node_modules", "npm", "bin", "npm-cli.js");
+    if (!await isFile(cli)) continue;
+    // npm.cmd prefers a node.exe beside itself, then the one on PATH.
+    const local = path.join(dir, "node.exe");
+    const node = await isFile(local) ? local : hostNode ?? pathNode;
+    if (node) return { file: node, args: [cli] };
+  }
+  throw new Error("Could not find npm. Ensure Node.js and npm are installed and on PATH.");
+}
+
+export function createNpmRunner(options) {
+  let resolved;
+  return async (args, execOptions) => {
+    const npm = await (resolved ??= resolveNpm(options).catch(failure => { resolved = undefined; throw failure; }));
+    return exec(npm.file, [...npm.args, ...args], execOptions);
+  };
+}
+
 export function createRuntime({
   cwd = homedir(),
   home = process.env.COPILOT_HOME || path.join(homedir(), ".copilot"),
-  runNpm = (args, options) => exec("npm", args, options),
+  runNpm = createNpmRunner(),
   unpack = readRuntimeArchive,
 } = {}) {
   // Kept outside extensions/ so gist sharing never walks downloaded binaries, npm logs or settings.
