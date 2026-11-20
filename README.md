@@ -23,14 +23,14 @@ Ask Copilot:
 
 ```text
 Install the P5.js Canvas extension from
-https://github.com/weastler/p5-canvas/tree/dist-v1.0.0/p5-canvas
+https://github.com/weastler/p5-canvas/tree/dist-v1.0.1/p5-canvas
 ```
 
 Or, in the app, open **Customize → Install canvas extension** and paste a folder URL:
 
 - Latest: `https://github.com/weastler/p5-canvas/tree/dist/p5-canvas`
-- Pinned: `https://github.com/weastler/p5-canvas/tree/dist-v1.0.0/p5-canvas`. For another
-  version, replace `dist-v1.0.0` with its `dist-v*` tag or a commit ID from the `dist` branch.
+- Pinned: `https://github.com/weastler/p5-canvas/tree/dist-v1.0.1/p5-canvas`. For another
+  version, replace `dist-v1.0.1` with its `dist-v*` tag or a commit ID from the `dist` branch.
 
 The URL must point to the `p5-canvas` folder, not the repository root.
 
@@ -40,7 +40,7 @@ The URL must point to the `p5-canvas` folder, not the repository root.
 somewhere safe. Preserve its `artifacts/` folder, if present, and restore it into the new
 `p5-canvas/` folder before reloading; it may contain saved data.
 
-Download [`p5-canvas-v1.0.0.zip`](https://github.com/weastler/p5-canvas/releases/download/v1.0.0/p5-canvas-v1.0.0.zip)
+Download [`p5-canvas-v1.0.1.zip`](https://github.com/weastler/p5-canvas/releases/download/v1.0.1/p5-canvas-v1.0.1.zip)
 and extract its `p5-canvas/` folder into `~/.copilot/extensions/`, so the result is
 `~/.copilot/extensions/p5-canvas/`. Then reload extensions or restart the app.
 
@@ -57,9 +57,9 @@ Or add `weastler/p5-canvas` in the app's **Customize** marketplace settings
 and install **p5-canvas**. The CLI route is verified; the Customize UI route
 has not yet been tested. This plugin requires a Copilot host with canvas support.
 
-The [v1.0.0 release](https://github.com/weastler/p5-canvas/releases/tag/v1.0.0)
+The [v1.0.1 release](https://github.com/weastler/p5-canvas/releases/tag/v1.0.1)
 includes both download packages and a
-[pinned plugin snapshot](https://github.com/weastler/p5-canvas/tree/dist-v1.0.0).
+[pinned plugin snapshot](https://github.com/weastler/p5-canvas/tree/dist-v1.0.1).
 The repository marketplace follows the latest build.
 
 ## Make something
